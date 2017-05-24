@@ -14,7 +14,7 @@ const session = expressSession( { secret: 'Shhhhhhhhhhhhhhhh', resave: false, sa
 
 const app = express();
 app.set( 'view engine', 'pug' );
-app.use( express.static( path.join( __dirname, 'path' ) ) );
+app.use( express.static( path.join( __dirname, 'public' ) ) );
 app.use( cookieParser() );
 app.use( session );
 app.use( bodyParser.urlencoded( { extended: false } ) );
@@ -43,7 +43,7 @@ app.get( '/register', ( req, res ) => {
 
 app.post( '/register', ( req, res ) => {
 
-  if ( req.isAuthenticated() ) {
+  if ( !req.isAuthenticated() ) {
 
     backend.register( req, res );
 
@@ -52,5 +52,51 @@ app.post( '/register', ( req, res ) => {
     res.render( 'register', { err: 'You must sign out before you can create a new account.' } );
 
   }
+
+});
+
+app.get( '/login', ( req, res ) => {
+
+  if ( !req.isAuthenticated() ) {
+
+    console.log( 'Is not logged in.' );
+    res.render( 'login' );
+
+  } else {
+
+    console.log( 'Is logged in.' );
+    res.render( 'login', { err: 'You are currently logged in as ' + req.user.Username } );
+
+  }
+
+});
+
+app.post( '/login', ( req, res ) => {
+
+  passport.authenticate( 'local', ( err, user ) => {
+
+    if ( !err ) {
+
+      req.logIn( user, ( err ) => {
+
+        if ( !err ) {
+
+          res.redirect( '/profile/' + user.Username );
+
+        } else {
+
+          res.render( 'login', { err: 'Authentiation failed. Internal server error.' } );
+
+        }
+
+      });
+
+    } else {
+
+      res.render( 'login', err );
+
+    }
+
+  })( req, res );
 
 });

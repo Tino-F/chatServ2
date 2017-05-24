@@ -14,7 +14,7 @@ exports.decrypt = text => {
 
 exports.find_user = ( q, callback ) => {
 
-  MongoClient.connect( url, () => {
+  MongoClient.connect( url, ( err, db ) => {
 
     if ( !err ) {
 
@@ -24,13 +24,13 @@ exports.find_user = ( q, callback ) => {
 
         if ( !err ) {
 
-          if ( !item[ 0 ] ) {
+          if ( !data[ 0 ] ) {
 
             callback( false, false );
 
           } else {
 
-            callback( false, item[ 0 ] );
+            callback( false, data[ 0 ] );
 
           }
 
@@ -77,6 +77,8 @@ exports.add_user = ( user, callback ) => {
           console.log( err );
 
         }
+
+        db.close();
 
       });
 
@@ -129,8 +131,8 @@ exports.configure_pass = ( passport ) => {
 
   }) );
 
-  passport.serializeUser( ( user, done ) => done( null, user ) );
-  passport.deserializeUser( ( user, done ) => done( null, user ) );
+  passport.serializeUser( ( user, done ) => done( false, user ) );
+  passport.deserializeUser( ( user, done ) => done( false, user ) );
 
 };
 
@@ -138,9 +140,12 @@ exports.register = ( req, res ) => {
 
   let new_user = {
     Username: req.body.username,
-    Password: rea.body.password,
+    Password: req.body.password,
     Description: req.body.description
   };
+
+  console.log();
+  console.log( req.body );
 
   this.find_user( {Username: new_user.Username }, ( err, user ) => {
 
