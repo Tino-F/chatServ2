@@ -3,12 +3,23 @@ const crypto = require( 'crypto' );
 const localStrat = require( 'passport-local' ).Strategy;
 const MongoClient = require( 'mongodb' ).MongoClient;
 const url = 'mongodb://0.0.0.0:27017';
+const key = 'fukdaworld'
 
-exports.encrypt = text => {
+exports.encrypt = ( text ) => {
+
+  let cipher = crypto.createCipher( 'aes-256-ctr', key );
+  let crypted = cipher.update( text, 'utf8', 'hex' );
+  crypted += cipher.final( 'hex' );
+  return crypted;
 
 };
 
-exports.decrypt = text => {
+exports.decrypt = ( text ) => {
+
+  let decipher = crypto.createDecipher( 'aes-256-ctr', key );
+  let dec = decipher.update( text, 'utf8', 'hex' );
+  dec += decipher.final( 'hex' );
+  return dec;
 
 };
 
@@ -108,10 +119,14 @@ exports.configure_pass = ( passport ) => {
 
         } else {
 
-          if ( user.Password = password ) {
+          if ( user.Password = this.encrypt( password ) ) {
 
-            user.Password = null;
-            done( false, user );
+            let secure_user = {
+              Username: user.Username,
+              Description: user.Description
+            }
+
+            done( false, secure_user );
 
           } else {
 
@@ -138,47 +153,82 @@ exports.configure_pass = ( passport ) => {
 
 exports.register = ( req, res ) => {
 
-  let new_user = {
-    Username: req.body.username,
-    Password: req.body.password,
-    Description: req.body.description
-  };
+  if ( /\//.test( req.body.username ) ) {
 
-  console.log();
-  console.log( req.body );
+    res.render( 'register', { err: 'Username invalid. Cannot contain "/".' } );
 
-  this.find_user( {Username: new_user.Username }, ( err, user ) => {
+  } else {
+
+    let new_user = {
+      Username: req.body.username,
+      Password: this.encrypt( req.body.password ),
+      Description: req.body.description
+    };
+
+    this.find_user( {Username: new_user.Username }, ( err, user ) => {
+
+      if ( !err ) {
+
+        if ( !user ) {
+
+          this.add_user( new_user, ( err ) => {
+
+            if ( !err ) {
+
+              res.redirect( '/login' );
+
+            } else {
+
+              res.render( 'register', err );
+
+            }
+
+          } );
+
+        } else {
+
+          res.render( 'register', { err: 'Username already exists.' } );
+
+        }
+
+      } else {
+
+        res.render( 'register', { err: ( 'Registration failed.' + err ) } );
+
+      }
+
+    } )
+  }
+
+};
+
+exports.profiles = ( req, res ) => {
+
+  this.find_user( { Username: req.params.id }, ( err, user ) => {
 
     if ( !err ) {
 
       if ( !user ) {
 
-        this.add_user( new_user, ( err ) => {
-
-          if ( !err ) {
-
-            res.redirect( '/login' );
-
-          } else {
-
-            res.render( 'register', err );
-
-          }
-
-        } );
+        res.render( 'user_not_found', { err: req.params.id } );
 
       } else {
 
-        res.render( 'register', { err: 'Username already exists.' } );
+        let secure_user = {
+          Username: user.Username,
+          Description: user.Description
+        }
+
+        res.render( 'profile', { user: secure_user } );
 
       }
 
     } else {
 
-      res.render( 'register', { err: ( 'Registration failed.' + err ) } );
+      res.render( 'profile', { err: 'Unable to load user data. Internal server error.' } );
 
     }
 
-  } )
+  });
 
 };

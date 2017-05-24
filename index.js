@@ -79,7 +79,7 @@ app.post( '/login', ( req, res ) => {
 
         if ( !err ) {
 
-          res.redirect( '/profile/' + user.Username );
+          res.redirect( '/profiles/' + user.Username );
 
         } else {
 
@@ -108,6 +108,28 @@ app.get( '/', ( req, res ) => {
   } else {
 
     res.render( 'home', false)
+
+  }
+
+});
+
+app.get( '/profiles/:id', ( req, res ) => {
+
+  if ( !req.isAuthenticated() ) {
+
+    backend.profiles( req, res );
+
+  } else {
+
+    if ( req.params.id === req.user.Username ) {
+
+      res.render( 'your_profile', req.user );
+
+    } else {
+
+      backend.profiles( req, res );
+
+    }
 
   }
 
