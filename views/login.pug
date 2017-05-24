@@ -1,0 +1,26 @@
+html
+  head
+    meta(charset='UTF-8')
+    link(rel='stylesheet', href='css/main.css')
+    title Login
+  body
+    div(align='center')
+      form(method='post', action='/login')
+        h1 Login
+        p.error= err
+
+        br
+        br
+
+        h3 Username
+        input(name='username', type='text')
+
+        br
+
+        h3 Password
+        input(name='password', type='password')
+
+        br
+        br
+
+        button(type='submit', value='submit') Submit

@@ -59,12 +59,10 @@ app.get( '/login', ( req, res ) => {
 
   if ( !req.isAuthenticated() ) {
 
-    console.log( 'Is not logged in.' );
     res.render( 'login' );
 
   } else {
 
-    console.log( 'Is logged in.' );
     res.render( 'login', { err: 'You are currently logged in as ' + req.user.Username } );
 
   }
@@ -98,5 +96,19 @@ app.post( '/login', ( req, res ) => {
     }
 
   })( req, res );
+
+});
+
+app.get( '/', ( req, res ) => {
+
+  if ( req.isAuthenticated() ) {
+
+    res.render( 'home', req.user );
+
+  } else {
+
+    res.render( 'home', false)
+
+  }
 
 });
