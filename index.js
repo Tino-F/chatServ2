@@ -26,3 +26,31 @@ const server = require( 'http' ).Server( app );
 const io = require( 'socket.io' )( server );
 server.listen( port );
 console.log( 'Started server on http://localhost:' + port + '.' );
+
+app.get( '/register', ( req, res ) => {
+
+  if ( req.isAuthenticated() ) {
+
+    res.render( 'register', { err: 'You must sign out before you can create a new account.' } );
+
+  } else {
+
+    res.render( 'register' );
+
+  }
+
+});
+
+app.post( '/register', ( req, res ) => {
+
+  if ( req.isAuthenticated() ) {
+
+    backend.register( req, res );
+
+  } else {
+
+    res.render( 'register', { err: 'You must sign out before you can create a new account.' } );
+
+  }
+
+});

@@ -56,6 +56,42 @@ exports.find_user = ( q, callback ) => {
 
 };
 
+exports.add_user = ( user, callback ) => {
+
+  MongoClient.connect( url, ( err, db ) => {
+
+    if ( !err ) {
+
+      let Profiles = db.collection( 'Profiles' );
+
+      Profiles.insert( user, ( err, idk ) => {
+
+        if ( !err ) {
+
+          callback( false );
+
+        } else {
+
+          callback( 'Registration failed due to an internal server error. Please try again later.' );
+          console.log( 'An error has occured while trying to add a user to MongoDB.');
+          console.log( err );
+
+        }
+
+      });
+
+    } else {
+
+      callback( 'Registration failed due to an internal server error. Please try again later.' );
+      console.log( 'Failed to connect to database.' );
+      console.log( err );
+
+    }
+
+  })
+
+};
+
 exports.configure_pass = ( passport ) => {
 
   passport.use( new localStrat(( username, password, done ) => {
@@ -102,7 +138,42 @@ exports.register = ( req, res ) => {
 
   let new_user = {
     Username: req.body.username,
-    Password: rea.body.password
+    Password: rea.body.password,
+    Description: req.body.description
   };
+
+  this.find_user( {Username: new_user.Username }, ( err, user ) => {
+
+    if ( !err ) {
+
+      if ( !user ) {
+
+        this.add_user( new_user, ( err ) => {
+
+          if ( !err ) {
+
+            res.redirect( '/login' );
+
+          } else {
+
+            res.render( 'register', err );
+
+          }
+
+        } );
+
+      } else {
+
+        res.render( 'register', { err: 'Username already exists.' } );
+
+      }
+
+    } else {
+
+      res.render( 'register', { err: ( 'Registration failed.' + err ) } );
+
+    }
+
+  } )
 
 };
