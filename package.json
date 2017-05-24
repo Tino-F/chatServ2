@@ -1,0 +1,36 @@
+{
+  "name": "chatserv2",
+  "version": "2.0.0",
+  "description": "Chat server redo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tino-F/chatserv2.git"
+  },
+  "keywords": [
+    "chat",
+    "socketio",
+    "mongodb",
+    "node"
+  ],
+  "author": "Andantino Fileccia",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Tino-F/chatserv2/issues"
+  },
+  "homepage": "https://github.com/Tino-F/chatserv2#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.3",
+    "express-session": "^1.15.3",
+    "mongodb": "^2.2.27",
+    "passport": "^0.3.2",
+    "passport-local": "^1.0.0",
+    "pug": "^2.0.0-rc.1",
+    "socket.io": "^2.0.1"
+  }
+}
