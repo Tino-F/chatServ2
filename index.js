@@ -31,7 +31,7 @@ app.get( '/register', ( req, res ) => {
 
   if ( req.isAuthenticated() ) {
 
-    res.render( 'register', { err: 'You must sign out before you can create a new account.' } );
+    res.render( 'register', { err: 'You must <a href="/logout">sign out</a> before you can create a new account.' } );
 
   } else {
 
@@ -99,6 +99,13 @@ app.post( '/login', ( req, res ) => {
 
 });
 
+app.get( '/logout', ( req, res ) => {
+
+  req.logout();
+  res.redirect( '/login' );
+
+});
+
 app.get( '/', ( req, res ) => {
 
   if ( req.isAuthenticated() ) {
@@ -123,7 +130,7 @@ app.get( '/profiles/:id', ( req, res ) => {
 
     if ( req.params.id === req.user.Username ) {
 
-      res.render( 'your_profile', req.user );
+      res.render( 'your_profile', { user: req.user } );
 
     } else {
 
@@ -132,5 +139,25 @@ app.get( '/profiles/:id', ( req, res ) => {
     }
 
   }
+
+});
+
+app.get( '/message', ( req, res ) => {
+
+  if ( req.isAuthenticated() ) {
+
+    res.render( 'message', { user: req.user } );
+
+  } else {
+
+    res.redirect( 'login' );
+
+  }
+
+});
+
+app.get( '/room/:id', ( req, res ) => {
+
+  
 
 });

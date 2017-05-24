@@ -1,13 +1,13 @@
 html
   head
     meta(charset='utf-8')
-    link(rel='stylesheet', href='css/main.css')
+    link(rel='stylesheet', href='/css/main.css')
     title register
   body
     div(align='center')
       form(method='post', action='/register')
         h1 Register
-        p.error= err
+        p.error!= err
 
         br
         br
