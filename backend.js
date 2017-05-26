@@ -41,6 +41,14 @@ exports.multer_config = ( multer ) => {
 
 };
 
+exports.secure_user = ( raw_user ) => {
+
+  let secure_user = raw_user;
+  secure_user.Password = false;
+  return secure_user;
+
+};
+
 exports.find_user = ( q, callback ) => {
 
   MongoClient.connect( url, ( err, db ) => {
@@ -139,11 +147,7 @@ exports.configure_pass = ( passport ) => {
 
           if ( user.Password = this.encrypt( password ) ) {
 
-            let secure_user = {
-              Username: user.Username,
-              Description: user.Description,
-              Avatar: user.Avatar
-            }
+            let secure_user = secure_user( user );
 
             done( false, secure_user );
 
@@ -242,11 +246,7 @@ exports.profiles = ( req, res ) => {
 
       } else {
 
-        let secure_user = {
-          Username: user.Username,
-          Description: user.Description,
-          Avatar: user.Avatar
-        }
+        let secure_user = this.secure_user( user );
 
         res.render( 'profile', { user: secure_user } );
 
