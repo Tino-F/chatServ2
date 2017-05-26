@@ -5,21 +5,33 @@ html
     title register
   body
     div(align='center')
-      form(method='post', action='/register')
+      form(method='post', enctype='multipart/form-data' action='/register')
         h1 Register
-        p.error!= err
+        p.error#err!= err
 
         br
         br
 
         h3 Username
-        input(type='text', name='username')
+        input(type='text', name='username' required)
 
         br
 
         h3 Password
-        input(type='password', name='password')
+        input(type='password', name='password', id='pass1' required)
 
+        br
+
+        h3 Re enter password
+        input(type='password', name='password2', id='pass2' required)
+
+        br
+        br
+        br
+
+        input(type='file', name='Avatar')
+
+        br
         br
 
         h3 Description

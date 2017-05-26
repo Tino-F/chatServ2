@@ -1,9 +1,12 @@
 "use strict";
 const crypto = require( 'crypto' );
+const path = require( 'path' );
+const mime = require( 'mime' );
 const localStrat = require( 'passport-local' ).Strategy;
 const MongoClient = require( 'mongodb' ).MongoClient;
 const url = 'mongodb://0.0.0.0:27017';
-const key = 'fukdaworld'
+const key = 'fukdaworld';
+
 
 exports.encrypt = ( text ) => {
 
@@ -20,6 +23,21 @@ exports.decrypt = ( text ) => {
   let dec = decipher.update( text, 'utf8', 'hex' );
   dec += decipher.final( 'hex' );
   return dec;
+
+};
+
+exports.multer_config = ( multer ) => {
+
+  let storage = multer.diskStorage({
+    destination: ( req, file, cb ) => { cb( null, path.join( __dirname, 'public', 'uploads' ) ) },
+    filename: ( req, file, cb ) => {
+      crypto.pseudoRandomBytes( 16, ( err, raw ) => {
+        cb( null, raw.toString( 'hex' ) + Date.now() + '.' + mime.extension( file.mimetype ) );
+      });
+    }
+  });
+
+  return multer( { storage: storage } );
 
 };
 
@@ -123,7 +141,8 @@ exports.configure_pass = ( passport ) => {
 
             let secure_user = {
               Username: user.Username,
-              Description: user.Description
+              Description: user.Description,
+              Avatar: user.Avatar
             }
 
             done( false, secure_user );
@@ -153,17 +172,26 @@ exports.configure_pass = ( passport ) => {
 
 exports.register = ( req, res ) => {
 
+  let new_user = {
+    Username: req.body.username,
+    Password: this.encrypt( req.body.password ),
+    Description: req.body.description,
+    Avatar: '/uploads/default.jpg'
+  };
+
+  if ( req.file ) {
+
+    new_user.Avatar = '/uploads/' + req.file.filename;
+
+  }
+
   if ( /\//.test( req.body.username ) ) {
 
     res.render( 'register', { err: 'Username invalid. Cannot contain "/".' } );
 
   } else {
 
-    let new_user = {
-      Username: req.body.username,
-      Password: this.encrypt( req.body.password ),
-      Description: req.body.description
-    };
+    console.log( new_user );
 
     this.find_user( {Username: new_user.Username }, ( err, user ) => {
 
@@ -216,7 +244,8 @@ exports.profiles = ( req, res ) => {
 
         let secure_user = {
           Username: user.Username,
-          Description: user.Description
+          Description: user.Description,
+          Avatar: user.Avatar
         }
 
         res.render( 'profile', { user: secure_user } );

@@ -1,4 +1,5 @@
 "use strict";
+const backend = require( './backend.js' );
 const MongoClient = require( 'mongodb' ).Client;
 const passport = require( 'passport' );
 const expressSession = require( 'express-session' );
@@ -7,7 +8,8 @@ const cookieParser = require( 'cookie-parser' );
 const bodyParser = require( 'body-parser' );
 const express = require( 'express' );
 const path = require( 'path' );
-const backend = require( './backend.js' );
+const multer = require( 'multer' );
+const upload = backend.multer_config( multer );
 const port  = 3000;
 const url = 'mongodb://0.0.0.0:27017';
 const session = expressSession( { secret: 'Shhhhhhhhhhhhhhhh', resave: false, saveUninitialized: false } );
@@ -41,7 +43,9 @@ app.get( '/register', ( req, res ) => {
 
 });
 
-app.post( '/register', ( req, res ) => {
+app.post( '/register', multer( upload ).single( 'Avatar' ), ( req, res ) => {
+
+  console.log( req );
 
   if ( !req.isAuthenticated() ) {
 
@@ -91,7 +95,7 @@ app.post( '/login', ( req, res ) => {
 
     } else {
 
-      res.render( 'login', err );
+      res.render( 'login', { err: err } );
 
     }
 
@@ -158,6 +162,6 @@ app.get( '/message', ( req, res ) => {
 
 app.get( '/room/:id', ( req, res ) => {
 
-  
+
 
 });
