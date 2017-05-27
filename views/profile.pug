@@ -1,0 +1,9 @@
+html
+  head
+    meta(charset='UTF-8')
+    link(rel='stylesheet', href='/css/main.css')
+    title= user.Username
+  body(style='background: url(' + user.Avatar + ')')
+    div(align='center')
+      h1= user.Username
+      p= user.Description
