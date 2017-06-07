@@ -49,50 +49,6 @@ exports.secure_user = ( raw_user ) => {
 
 };
 
-exports.find_user = ( q, callback ) => {
-
-  MongoClient.connect( url, ( err, db ) => {
-
-    if ( !err ) {
-
-      let Profiles = db.collection( 'Profiles' );
-
-      Profiles.find( q ).limit( 1 ).toArray( ( err, data ) => {
-
-        if ( !err ) {
-
-          if ( !data[ 0 ] ) {
-
-            callback( false, false );
-
-          } else {
-
-            callback( false, data[ 0 ] );
-
-          }
-
-        } else {
-
-          callback( 'Internal server error.', false );
-
-        }
-
-      } );
-
-      db.close();
-
-    } else {
-
-      callback( 'Internal server error.', false );
-      console.log( 'Failed to connect to database.' );
-      console.log( err )
-
-    }
-
-  } );
-
-};
-
 exports.add_user = ( user, callback ) => {
 
   MongoClient.connect( url, ( err, db ) => {
@@ -131,11 +87,59 @@ exports.add_user = ( user, callback ) => {
 
 };
 
+exports.find = ( q, collection, cb ) => {
+
+  MongoClient.connect( url, ( err, db ) => {
+
+    if ( !err ) {
+
+      let Col = db.collection( collection );
+
+      Col.find( q ).limit( 1 ).toArray( ( err, data ) => {
+
+        if ( !err ) {
+
+          if ( !data[ 0 ] ) {
+
+            cb( false, false );
+            db.close();
+
+          } else {
+
+            cb( false, data[ 0 ] );
+            db.close();
+
+          }
+
+        } else {
+
+          cb( 'Internal server error.', false );
+          db.close();
+          console.log( 'Failed to find room data.' );
+          console.log( err );
+
+        }
+
+      });
+
+    } else {
+
+      cb( 'Internal server error.', false );
+      db.close();
+      console.log( 'Failed to connect to database.' );
+      console.log( err );
+
+    }
+
+  });
+
+};
+
 exports.configure_pass = ( passport ) => {
 
   passport.use( new localStrat(( username, password, done ) => {
 
-    this.find_user( { Username: username }, ( err, user ) => {
+    this.find( { Username: username }, 'Profiles', ( err, user ) => {
 
       if ( !err ) {
 
@@ -145,9 +149,9 @@ exports.configure_pass = ( passport ) => {
 
         } else {
 
-          if ( user.Password = this.encrypt( password ) ) {
+          if ( user.Password === this.encrypt( password ) ) {
 
-            let secure_user = secure_user( user );
+            let secure_user = this.secure_user( user );
 
             done( false, secure_user );
 
@@ -161,7 +165,7 @@ exports.configure_pass = ( passport ) => {
 
       } else {
 
-        done( ( 'Authentiation failed.' + err ), false );
+        done( ( 'Authentiation failed. ' + err ), false );
 
       }
 
@@ -195,9 +199,7 @@ exports.register = ( req, res ) => {
 
   } else {
 
-    console.log( new_user );
-
-    this.find_user( {Username: new_user.Username }, ( err, user ) => {
+    this.find( {Username: new_user.Username }, 'Profiles', ( err, user ) => {
 
       if ( !err ) {
 
@@ -236,7 +238,7 @@ exports.register = ( req, res ) => {
 
 exports.profiles = ( req, res ) => {
 
-  this.find_user( { Username: req.params.id }, ( err, user ) => {
+  this.find( { Username: req.params.id }, 'Profiles', ( err, user ) => {
 
     if ( !err ) {
 
@@ -259,5 +261,74 @@ exports.profiles = ( req, res ) => {
     }
 
   });
+
+};
+
+exports.create_room = ( req, res ) => {
+
+  let room = {
+    Title: req.body.title,
+    Background: 'url(\'/uploads/' + req.file.filename + '\')',
+    Description: req.body.description,
+    Mods: [ 'TinoF', req.user.Username ],
+    Messages: []
+  };
+
+  if ( /\//.test( room.Title ) ) {
+
+    res.render( 'Room names cannot contain any "/"\'s.' );
+
+  } else {
+
+    this.find( { Title: room.Title }, 'Rooms', ( err, item ) => {
+
+      if ( err ) {
+
+        res.render( 'create_room', { err: err } );
+
+      } else {
+
+        if ( !item ) {
+
+          MongoClient.connect( url, ( err, db ) => {
+
+            if ( !err ) {
+
+              let col = db.collection( 'Rooms' );
+              col.insert( room, ( err, idk ) => {
+
+                if ( !err ) {
+
+                  res.redirect( '/room/' + room.Title );
+
+                } else {
+
+                  res.render( 'create_room', { err: 'Failed to add room. Internal server error.' } );
+                  console.log( err );
+
+                }
+
+              });
+
+            } else {
+
+              res.render( 'create_room', { err: 'Internal server error.' } );
+              console.log( err )
+
+            }
+
+          });
+
+        } else {
+
+          res.render( 'create_room', { err: 'A room with this name already exists.' } );
+
+        }
+
+      }
+
+    });
+
+  }
 
 };

@@ -1,0 +1,33 @@
+html
+  head
+    meta(charset='UTF-8')
+    link(rel='stylesheet', href='/css/main.css')
+    title Home
+  body
+    div(align='center')
+      h1 Create a Room
+      p(style='color: red')= err
+
+      form(method='post', enctype='multipart/form-data')
+        h3 Title
+        br
+        input(type='text', name='title')
+
+        br
+        br
+
+        h3 Background image
+        br
+        input(type='file', name='background')
+
+        br
+        br
+
+        h3 Description
+        br
+        textarea(name='description')
+
+        br
+        br
+
+        button(type='submit', value='submit') Submit

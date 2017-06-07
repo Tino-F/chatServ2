@@ -162,6 +162,60 @@ app.get( '/message', ( req, res ) => {
 
 app.get( '/room/:id', ( req, res ) => {
 
+  backend.find( { Title: req.params.id }, 'Rooms', ( err, room ) => {
 
+    if ( !err ) {
+
+      if ( !room ) {
+
+        res.render( 'room_not_found', { Title: req.params.id } );
+
+      } else {
+
+        res.render( 'room', { room: room, user: req.user } );
+
+      }
+
+    } else {
+
+      res.render( 'something_has_occured' );
+
+    }
+
+  });
 
 });
+
+app.get( '/create', ( req, res ) => {
+
+  if ( req.isAuthenticated() ) {
+
+    res.render( 'create_room' );
+
+  } else {
+
+    res.redirect( '/login' );
+
+  }
+
+} );
+
+app.post( '/create', multer( upload ).single( 'background' ), ( req, res ) => {
+
+  if ( req.isAuthenticated() ) {
+
+    backend.create_room( req, res );
+
+  } else {
+
+    res.redirect( '/login' );
+
+  }
+
+} );
+
+app.get( '/room', ( req, res ) => {
+
+
+
+} );
