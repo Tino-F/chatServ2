@@ -1,5 +1,6 @@
 "use strict";
 const backend = require( './backend.js' );
+const sockets = require( './sockets.js' );
 const MongoClient = require( 'mongodb' ).Client;
 const passport = require( 'passport' );
 const expressSession = require( 'express-session' );
@@ -13,7 +14,6 @@ const upload = backend.multer_config( multer );
 const port  = 3000;
 const url = 'mongodb://0.0.0.0:27017';
 const session = expressSession( { secret: 'Shhhhhhhhhhhhhhhh', resave: false, saveUninitialized: false } );
-
 const app = express();
 app.set( 'view engine', 'pug' );
 app.use( express.static( path.join( __dirname, 'public' ) ) );
@@ -26,8 +26,14 @@ backend.configure_pass( passport );
 
 const server = require( 'http' ).Server( app );
 const io = require( 'socket.io' )( server );
+io.use( socketSession( session, {
+  autosave: true
+}) );
+sockets.configure( io );
 server.listen( port );
 console.log( 'Started server on http://localhost:' + port + '.' );
+
+
 
 app.get( '/register', ( req, res ) => {
 
@@ -216,6 +222,6 @@ app.post( '/create', multer( upload ).single( 'background' ), ( req, res ) => {
 
 app.get( '/room', ( req, res ) => {
 
-
+  res.render( 'find_rooms', results );
 
 } );

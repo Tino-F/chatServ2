@@ -268,7 +268,7 @@ exports.create_room = ( req, res ) => {
 
   let room = {
     Title: req.body.title,
-    Background: 'url(\'/uploads/' + req.file.filename + '\')',
+    Background: req.file.filename,
     Description: req.body.description,
     Mods: [ 'TinoF', req.user.Username ],
     Messages: []
@@ -300,11 +300,13 @@ exports.create_room = ( req, res ) => {
                 if ( !err ) {
 
                   res.redirect( '/room/' + room.Title );
+                  db.close();
 
                 } else {
 
                   res.render( 'create_room', { err: 'Failed to add room. Internal server error.' } );
                   console.log( err );
+                  db.close();
 
                 }
 
@@ -330,5 +332,41 @@ exports.create_room = ( req, res ) => {
     });
 
   }
+
+};
+
+exports.newMessage = ( message, cb ) => {
+
+  MongoClient.connect( url, ( err, db ) => {
+
+    if ( !err ) {
+
+      let Rooms = db.collection( 'Rooms' );
+      Rooms.update(
+        { Title: message.room },
+        { $push: { Messages: message } },
+        ( err, results ) => {
+
+          if ( !err ) {
+
+            cb( false );
+
+          } else {
+
+            cb( 'Failed to add message to database due to an internal server error.' );
+
+          }
+
+        }
+      );
+
+    } else {
+
+      cb( 'Failed to add message to database due to an internal server error.' );
+      console.log( err );
+
+    }
+
+  });
 
 };

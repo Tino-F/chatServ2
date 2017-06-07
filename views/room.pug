@@ -4,8 +4,9 @@ html
     link(rel='stylesheet', href='/css/main.css')
     title Home
     script(src='/socket.io/socket.io.js')
+    script(src='/js/jquery.js')
     script(src='/js/room.js')
-  body(style='background: ' + room.Background)
+  body(style='background: url(/uploads/' + room.Background + ')')
     div#room_title(align='center')
       h1= room.Title
       p= room.Description
