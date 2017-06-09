@@ -220,8 +220,8 @@ app.post( '/create', multer( upload ).single( 'background' ), ( req, res ) => {
 
 } );
 
-app.get( '/room', ( req, res ) => {
+app.get( '/random', ( req, res ) => {
 
-  res.render( 'find_rooms', results );
+  backend.random( req, res );
 
-} );
+});

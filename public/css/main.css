@@ -1,5 +1,5 @@
 body {
-  font-family: sans-serif;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
   margin: 0;
   padding: 0;
 }
@@ -11,10 +11,43 @@ body {
 #room_title {
   margin: 0;
   width: 100%;
-  background: grey;
+  background: #333;
   color: white;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
 }
 
 #room_title h1 {
   margin: 0;
+}
+
+#send_message_form {
+  position: fixed;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+#send_message_form textarea {
+  width: 80%;
+  height: 60px;
+  margin: 0;
+  float: left;
+  resize: none;
+  padding: 0.5%;
+  color: white;
+  background: #333;
+  border: 0;
+}
+
+#send_message_form button {
+  width: 20%;
+  height: 60px;
+  margin: 0;
+  float: right;
+  border-radius: 0;
+  background: #333;
+  color: white;
+  border: 0;
+  border-left: 1px solid white;
+  font-family: 'Century Gothic', CenturyGothic, AppleGothic, sans-serif;
 }

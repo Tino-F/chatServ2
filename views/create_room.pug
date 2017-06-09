@@ -8,7 +8,7 @@ html
       h1 Create a Room
       p(style='color: red')= err
 
-      form(method='post', enctype='multipart/form-data')
+      form(method='post', action='/create', enctype='multipart/form-data')
         h3 Title
         br
         input(type='text', name='title')
@@ -26,6 +26,23 @@ html
         h3 Description
         br
         textarea(name='description')
+
+        br
+        br
+
+        h3 Type
+        br
+        select(name='status')
+          option(value='public') Public
+          option(value='random') Random
+          option(value='private') Private
+
+        br
+        br
+
+        h3 Room key
+        br
+        input(type='password', name='key')
 
         br
         br

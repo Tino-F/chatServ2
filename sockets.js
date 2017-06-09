@@ -5,25 +5,38 @@ let all_users = [];
 
 class Room {
 
-  constructor ( io, room_name ) {
+  constructor ( io, room_name, current_rooms ) {
 
     this.users = {};
+    this.users.data = [];
     this.users.count = 0;
-    this.users.names = [];
     this.messages = [];
-    this.host = io.of( room_name );
+    this.room_name = room_name;
+    this.room_id = current_rooms + 1;
+    this.host = io.of( '/' + room_name );
 
   }
 
-  sendMessage ( data ) {
+  refresh_messages () {
 
-    backend.newMessage( data, ( err ) => {
+    backend.find( { Title: this.room_name }, 'Rooms', ( err, le_room ) => {
 
       if ( !err ) {
 
+        if ( !le_room ) {
+
+          console.log( 'Room doesn\'n even exist bruh...' );
+
+        } else {
+
+          this.messages = le_room.Messages;
+
+        }
+
       } else {
 
-        socket.emit
+        console.log( 'Failed to update room with stored content.\n' );
+        console.log( err );
 
       }
 
@@ -31,9 +44,23 @@ class Room {
 
   }
 
-  retreiveMessages () {
+  sendMessage ( data ) {
 
+    this.messges.push( data );
 
+    backend.newMessage( data, ( err ) => {
+
+      if ( !err ) {
+
+        this.host.emit( 'new message', data );
+
+      } else {
+
+        console.log( err );
+
+      }
+
+    });
 
   }
 
@@ -42,12 +69,16 @@ class Room {
     this.host.on( 'connection', ( socket ) => {
 
       this.users.count += 1;
-      this.user.names.push( socket.handshake.session.passport.user.Name );
+      this.users.data.push( socket.handshake.session.passport.user );
 
-      host.on( 'new_message', () => {
 
-        this.messages.push( messages )
-        
+
+      host.on( 'new_message', ( message ) => {
+
+        message.user = socket.handshate.session.passport.user;
+
+        this.sendMessage( data );
+
 
       });
 
@@ -66,6 +97,20 @@ class Room {
 
 exports.configure = ( io ) => {
 
-  io.on( 'connect' );
+  io.on( 'connect', () => {});
+
+};
+
+
+exports.new_room = ( io, room ) => {
+
+  rooms.push( new Room( io, room, rooms.length ) );
+
+};
+
+
+exports.sendMessage = ( message ) => {
+
+  rooms[ message.room_id ];
 
 };

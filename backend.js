@@ -49,6 +49,35 @@ exports.secure_user = ( raw_user ) => {
 
 };
 
+exports.xss = ( data ) => {
+//text cannot contain \
+
+  if ( /\//.test( data ) ) {
+
+    return '/';
+
+  } else if ( /</.test( data ) || />/.test( data ) ) {
+
+    return '> or <';
+
+  } else if ( /;/.test( data ) ) {
+
+    return ';';
+
+  } else {
+
+    return false;
+
+  }
+
+};
+
+exports.random = ( min, max ) => {
+
+  return Math.floor( Math.random() * ( max - min + 1) ) + min;
+
+};
+
 exports.add_user = ( user, callback ) => {
 
   MongoClient.connect( url, ( err, db ) => {
@@ -84,6 +113,61 @@ exports.add_user = ( user, callback ) => {
     }
 
   })
+
+};
+
+exports.add_room = ( req, res, room ) => {
+
+  this.find( { Title: room.Title }, 'Rooms', ( err, item ) => {
+
+    if ( err ) {
+
+      res.render( 'create_room', { err: err } );
+
+    } else {
+
+      if ( !item ) {
+
+        MongoClient.connect( url, ( err, db ) => {
+
+          if ( !err ) {
+
+            let col = db.collection( 'Rooms' );
+            col.insert( room, ( err, idk ) => {
+
+              if ( !err ) {
+
+                res.redirect( '/room/' + room.Title );
+                db.close();
+
+              } else {
+
+                res.render( 'create_room', { err: 'Failed to add room. Internal server error.' } );
+                console.log( err );
+                db.close();
+
+              }
+
+            });
+
+          } else {
+
+            res.render( 'create_room', { err: 'Internal server error.' } );
+            console.log( err )
+
+          }
+
+        });
+
+      } else {
+
+        res.render( 'create_room', { err: 'A room with this name already exists.' } );
+
+      }
+
+    }
+
+  });
 
 };
 
@@ -271,6 +355,7 @@ exports.create_room = ( req, res ) => {
     Background: req.file.filename,
     Description: req.body.description,
     Mods: [ 'TinoF', req.user.Username ],
+    Type: req.body.status,
     Messages: []
   };
 
@@ -280,56 +365,40 @@ exports.create_room = ( req, res ) => {
 
   } else {
 
-    this.find( { Title: room.Title }, 'Rooms', ( err, item ) => {
+    if ( room.Type === 'private' ) {
 
-      if ( err ) {
+      if ( req.body.key ) {
 
-        res.render( 'create_room', { err: err } );
+        if ( req.body.key.length >= 8 ) {
 
-      } else {
-
-        if ( !item ) {
-
-          MongoClient.connect( url, ( err, db ) => {
-
-            if ( !err ) {
-
-              let col = db.collection( 'Rooms' );
-              col.insert( room, ( err, idk ) => {
-
-                if ( !err ) {
-
-                  res.redirect( '/room/' + room.Title );
-                  db.close();
-
-                } else {
-
-                  res.render( 'create_room', { err: 'Failed to add room. Internal server error.' } );
-                  console.log( err );
-                  db.close();
-
-                }
-
-              });
-
-            } else {
-
-              res.render( 'create_room', { err: 'Internal server error.' } );
-              console.log( err )
-
-            }
-
-          });
+          room.key = this.encrypt( req.body.key );
+          this.add_room( req, res, room );
 
         } else {
 
-          res.render( 'create_room', { err: 'A room with this name already exists.' } );
+          res.render( 'create_room', { err: 'Password must be at least 8 characters long.' } );
 
         }
 
+      } else {
+
+        res.render( 'create_room', { err: 'Please enter a room key.' } );
+
+      };
+
+    } else {
+
+      if ( room.Type === 'public' || room.Type === 'random' ) {
+
+        this.add_room( req, res, room );
+
+      } else {
+
+        res.render( 'create_room', { err: 'What the fuck?' } );
+
       }
 
-    });
+    }
 
   }
 
@@ -363,6 +432,60 @@ exports.newMessage = ( message, cb ) => {
     } else {
 
       cb( 'Failed to add message to database due to an internal server error.' );
+      console.log( err );
+
+    }
+
+  });
+
+};
+
+exports.random = ( req, res ) => {
+
+  MongoClient.connect( url, ( err, db ) => {
+
+    if ( !err ) {
+
+      let Rooms = db.collection( 'Rooms' );
+
+      Rooms.find( { Type: 'random' } ).toArray( ( err, rooms ) => {
+
+        if ( !err ) {
+
+          if ( !rooms ) {
+
+            res.render( 'create_room', { err: 'There are currently no random rooms on the server, be the fisrt to make one!' } );
+            db.close();
+
+          } else {
+
+            if ( rooms.length > 1 ) {
+
+              res.render( '/rooms/' + rooms[ this.random( 0, rooms.length ) ].Title );
+              db.close();
+
+            } else {
+
+              res.redirect( '/rooms/' + rooms[0].Title );
+              db.close();
+
+            }
+
+          }
+
+        } else {
+
+          res.render( 'something_has_occured' );
+          console.log( err );
+          db.close();
+
+        }
+
+      });
+
+    } else {
+
+      res.render( 'something_has_occured' );
       console.log( err );
 
     }

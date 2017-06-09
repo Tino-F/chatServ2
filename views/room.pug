@@ -6,7 +6,14 @@ html
     script(src='/socket.io/socket.io.js')
     script(src='/js/jquery.js')
     script(src='/js/room.js')
+    script(src='/js/bottom.js')
   body(style='background: url(/uploads/' + room.Background + ')')
     div#room_title(align='center')
       h1= room.Title
       p= room.Description
+
+    div#message_container
+
+    div#send_message_form
+      textarea(name='message_text')
+      button(onclick='send_message()') Send
