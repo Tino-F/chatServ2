@@ -74,7 +74,7 @@ exports.xss = ( data ) => {
 
 exports.random = ( min, max ) => {
 
-  return Math.floor( Math.random() * ( max - min + 1) ) + min;
+  return ( Math.floor( Math.random() * ( max - min + 1 ) ) + min );
 
 };
 
@@ -461,12 +461,12 @@ exports.random = ( req, res ) => {
 
             if ( rooms.length > 1 ) {
 
-              res.render( '/rooms/' + rooms[ this.random( 0, rooms.length ) ].Title );
+              res.redirect( '/room/' + rooms[ Math.floor( Math.random() * ( rooms.length ) ) ].Title );
               db.close();
 
             } else {
 
-              res.redirect( '/rooms/' + rooms[0].Title );
+              res.redirect( '/room/' + rooms[0].Title );
               db.close();
 
             }
