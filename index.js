@@ -152,20 +152,6 @@ app.get( '/profiles/:id', ( req, res ) => {
 
 });
 
-app.get( '/message', ( req, res ) => {
-
-  if ( req.isAuthenticated() ) {
-
-    res.render( 'message', { user: req.user } );
-
-  } else {
-
-    res.redirect( 'login' );
-
-  }
-
-});
-
 app.get( '/room/:id', ( req, res ) => {
 
   backend.find( { Title: req.params.id }, 'Rooms', ( err, room ) => {
@@ -178,7 +164,15 @@ app.get( '/room/:id', ( req, res ) => {
 
       } else {
 
-        res.render( 'room', { room: room, user: req.user } );
+        if ( room.Type === 'private' ) {
+
+          res.render( 'private' );
+
+        } else {
+
+          res.render( 'room', { room: room, user: req.user } );
+
+        }
 
       }
 

@@ -452,9 +452,9 @@ exports.random = ( req, res ) => {
 
         if ( !err ) {
 
-          if ( !rooms ) {
+          if ( !rooms[0] ) {
 
-            res.render( 'create_room', { err: 'There are currently no random rooms on the server, be the fisrt to make one!' } );
+            res.redirect( '/create' );
             db.close();
 
           } else {
